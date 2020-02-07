@@ -94,11 +94,14 @@ fi
 
 export PATH=$PATH:/home/$(whoami)
 export PATH=$PATH:/home/$(whoami)/n/bin
+export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 
 echo ■ npm $(npm --version)
 echo ■ node $(node --version)
 echo ■ $(python3 --version)
 echo ■ $(pip3 --version)
 echo ■ $(terraform --version)
-echo ■ $(aws --version)
 echo ■ $(go version)
+echo ■ $(brew --version)
+echo ■ $(aws --version)
+echo ■ $(sam --version)
