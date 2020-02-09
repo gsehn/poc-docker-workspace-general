@@ -13,4 +13,18 @@ region=$AWS_REGION
 output=json
 EOT
 
+cat <<EOT >> ~/.ssh/config
+Host *
+   AddKeysToAgent yes
+   IdentityFile ~/.ssh/id_rsa
+EOT
+
+echo ■ Starting ssh-agent
+eval $(ssh-agent)
+echo ■ Adding ssh keys
+ssh-add
+echo
+
+sudo chmod 666 /var/run/docker.sock
+
 /bin/bash

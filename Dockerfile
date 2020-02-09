@@ -11,7 +11,6 @@ ENV LC_ALL en_US.UTF-8
 # Update packages and install basics
 RUN apt-get update
 RUN apt-get install -y \
-  git \
   vim \
   wget \
   openssl \
@@ -24,16 +23,35 @@ RUN apt-get install -y \
   python3 \
   python3-pip \
   golang \
+  direnv \
+  apt-utils \
+  software-properties-common \
+  groff \
   locales
 
+RUN add-apt-repository ppa:git-core/ppa
+RUN apt-get update -y
+RUN apt-get upgrade -y
+RUN apt update -y
+RUN apt upgrade -y
+RUN apt install git -y
+
 RUN locale-gen en_US.UTF-8
+
+# Install Docker
+RUN curl -sSL https://get.docker.com/ | sh
+
+# Recognize shared SSH keys
+RUN echo "    IdentityFile ~/.ssh/id_rsa" >> /etc/ssh/ssh_config
+
 
 # Create user and home
 RUN useradd -m $USER
 RUN echo "${USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
-RUN cat /etc/sudoers
+RUN usermod -aG docker ${USER}
 USER ${USER}
 WORKDIR /home/${USER}
+
 
 # Copy assets to home (i.e. .bashrc, .bash_aliases, etc)
 COPY --chown=guenther.sehn assets/. .
@@ -45,6 +63,20 @@ RUN unzip terraform*.zip
 RUN sudo mv terraform /usr/local/bin/
 RUN terraform --version 
 
+# Install - AWS CLI
+RUN sudo pip3 install awscli --upgrade
+RUN mkdir ~/.aws
+
+# Compile my favorite git-prompt tool
+RUN go build git-prompt.go
+
+# Install Homebrew
+RUN yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+
+# AWS SAM
+RUN /home/linuxbrew/.linuxbrew/bin/brew tap aws/tap
+RUN /home/linuxbrew/.linuxbrew/bin/brew install aws-sam-cli
+
 # Install - Node Manager (n) and latest Node version
 ENV N_PREFIX=/home/${USER}/n
 RUN curl -L https://git.io/n-install > install_n.sh
@@ -52,22 +84,14 @@ RUN chmod +x install_n.sh
 RUN yes | ./install_n.sh
 RUN export PATH=$PATH:/home/$(whoami)/n/bin
 
-# Install - AWS CLI
-# RUN chown -R guenther.sehn /home/${USER}
-RUN sudo pip3 install awscli --upgrade
-RUN mkdir ~/.aws
+# Install - Node - TypeScript
+RUN PATH=$PATH:/home/$(whoami)/n/bin npm i -g typescript
 
-RUN go build git-prompt.go
+# Install - Global - Yarn 1.X
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+RUN sudo apt update && sudo apt install --no-install-recommends yarn -y
 
-# Install Homebrew
-RUN yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-# RUN test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-# RUN test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-# RUN test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-# RUN echo "eval \$($(brew --prefix)/bin/brew shellenv)" >> ~/.bashrc
-
-# AWS SAM
-RUN /home/linuxbrew/.linuxbrew/bin/brew tap aws/tap
-RUN /home/linuxbrew/.linuxbrew/bin/brew install aws-sam-cli
+EXPOSE 3000
 
 ENTRYPOINT [ "./entrypoint.sh" ]

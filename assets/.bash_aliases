@@ -28,6 +28,7 @@ alias gbd="git push origin --delete"
 
 # Folders
 alias ws="cd ~/workspaces"
+alias poc="cd ~/poc"
 alias opt="cd /opt && ll"
 
 # docker

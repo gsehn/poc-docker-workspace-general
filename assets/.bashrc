@@ -98,6 +98,8 @@ export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin
 
 echo ■ npm $(npm --version)
 echo ■ node $(node --version)
+echo ■ typescript $(tsc --version)
+echo ■ yarn $(yarn --version)
 echo ■ $(python3 --version)
 echo ■ $(pip3 --version)
 echo ■ $(terraform --version)
@@ -105,3 +107,4 @@ echo ■ $(go version)
 echo ■ $(brew --version)
 echo ■ $(aws --version)
 echo ■ $(sam --version)
+echo ■ $(docker --version)
